@@ -82,9 +82,9 @@ public class hw4 {
 		return w;
 	}
 
+	/* perceptron */
 	public static int[] perceptron (LinkedList<int[]> trainData, 
 	LinkedList<int[]> testData, int passes) {
-
 		/* w - normal vector to the hyperplane */
 		int[] w = new int[784];
 
@@ -115,6 +115,48 @@ public class hw4 {
 				}
 			}
 		}
+
+		/* training error */
+		
+		Iterator<int[]> trainIt = trainData.iterator();
+		int errs = 0;
+
+		while (trainIt.hasNext()) {
+			int[] curr = trainIt.next();
+
+			ftVec = Arrays.copyOfRange (curr, 0, curr.length - 1);
+
+			if (curr[curr.length - 1] == 0) label = -1;
+			else label = 1;
+
+			if (label * dot (w, ftVec) <= 0) {
+				errs++;
+			}
+		}
+
+		System.out.println ("\ttraining error = " + 
+			((float)errs / trainData.size()));
+
+		/* test error */
+
+		Iterator<int[]> testIt = testData.iterator();
+		errs = 0;
+
+		while (testIt.hasNext()) {
+			int[] curr = testIt.next();
+
+			ftVec = Arrays.copyOfRange (curr, 0, curr.length - 1);
+
+			if (curr[curr.length - 1] == 0) label = -1;
+			else label = 1;
+
+			if (label * dot (w, ftVec) <= 0) {
+				errs++;
+			}
+		}
+
+		System.out.println ("\ttest error = " + 
+			((float)errs / testData.size()) + "\n");
 
 		return w;
 	}
@@ -151,7 +193,7 @@ public class hw4 {
 
 			int[] res = perceptron (aTrainData, aTestData, i);
 
-			printVec (res);
+			//printVec (res);
 		}
 
 		System.out.println ("running voted perceptron...\n");
