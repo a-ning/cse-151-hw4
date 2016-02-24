@@ -17,31 +17,31 @@ public class hw4 {
 		String line = null;
 
 		try {
-			FileReader fReader = new FileReader(file);
-			BufferedReader bReader = new BufferedReader(fReader);
+			FileReader fReader = new FileReader (file);
+			BufferedReader bReader = new BufferedReader (fReader);
 
 			/* while there are still lines to read */
-			while((line = bReader.readLine()) != null) {
+			while ((line = bReader.readLine()) != null) {
 				/* split each line by spaces */
-				String[] vals = line.split(" ");
+				String[] vals = line.split (" ");
 				/* array to store values */
 				int[] fVals = new int[vals.length];
 
 				/* store values as integers */
-				for(int i = 0; i < fVals.length; i++) {
-					fVals[i] = Integer.parseInt(vals[i]);
+				for (int i = 0; i < fVals.length; i++) {
+					fVals[i] = Integer.parseInt (vals[i]);
 				}
 
 				/* add to LL */
-				res.add(fVals);
+				res.add (fVals);
 			}
 
 			/* close file */
 			bReader.close();
-		} catch(FileNotFoundException ex) {
-			System.out.println("Failed to open file");
-		} catch(IOException ex) {
-			System.out.println("Error reading file");
+		} catch (FileNotFoundException ex) {
+			System.out.println ("Failed to open file");
+		} catch (IOException ex) {
+			System.out.println ("Error reading file");
 		}
 
 		return res;
@@ -59,7 +59,7 @@ public class hw4 {
 			}
 		}
 
-		System.out.println (s);
+		System.out.println (s + "\n");
 	}
 
 	/* function to calculate dot product */
@@ -103,7 +103,7 @@ public class hw4 {
 				int[] curr = trainIt.next();
 
 				/* get the feature vector */
-				ftVec = Arrays.copyOfRange(curr, 0, curr.length - 1);
+				ftVec = Arrays.copyOfRange (curr, 0, curr.length - 1);
 
 				/* check the label */
 				if (curr[curr.length - 1] == 0) label = -1;
@@ -138,33 +138,33 @@ public class hw4 {
 		LinkedList<int[]> aTrainData, aTestData;
 		File aTrainFile, aTestFile;
 
-		aTrainFile = new File("hw4atrain.txt");
-		aTestFile = new File("hw4atest.txt");
+		aTrainFile = new File ("hw4atrain.txt");
+		aTestFile = new File ("hw4atest.txt");
 
-		aTrainData = read(aTrainFile);
-		aTestData = read(aTestFile);
+		aTrainData = read (aTrainFile);
+		aTestData = read (aTestFile);
 
-		System.out.println ("running perceptron...");
+		System.out.println ("running perceptron...\n");
 
-		for (int i = 0; i < passes + 1; i++) {
-			System.out.println("# passes: " + i + "...");
+		for (int i = 1; i < passes + 1; i++) {
+			System.out.println ("# passes: " + i + "...\n");
 
 			int[] res = perceptron (aTrainData, aTestData, i);
 
-			//printVec (res);
+			printVec (res);
 		}
 
-		System.out.println ("running voted perceptron...");
+		System.out.println ("running voted perceptron...\n");
 
-		for (int i = 0; i < passes + 1; i++) {
-			System.out.println("# passes: " + i + "...");
+		for (int i = 1; i < passes + 1; i++) {
+			System.out.println ("# passes: " + i + "...\n");
 			votedPerceptron (aTrainData, aTestData, i);
 		}
 
-		System.out.println ("running averaged perceptron...");
+		System.out.println ("running averaged perceptron...\n");
 
-		for (int i = 0; i < passes + 1; i++) {
-			System.out.println("# passes: " + i + "...");
+		for (int i = 1; i < passes + 1; i++) {
+			System.out.println ("# passes: " + i + "...\n");
 			avgPerceptron (aTrainData, aTestData, i);
 		}
 
@@ -173,11 +173,11 @@ public class hw4 {
 		LinkedList<int[]> bTrainData, bTestData;
 		File bTrainFile, bTestFile;
 
-		bTrainFile = new File("hw4btrain.txt");
-		bTestFile = new File("hw4btest.txt");
+		bTrainFile = new File ("hw4btrain.txt");
+		bTestFile = new File ("hw4btest.txt");
 
-		bTrainData = read(bTrainFile);
-		bTestData = read(bTestFile);
+		bTrainData = read (bTrainFile);
+		bTestData = read (bTestFile);
 
 	}
 }
