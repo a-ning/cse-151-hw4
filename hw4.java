@@ -8,6 +8,7 @@
 import java.io.*;
 import java.util.*;
 import java.text.*;
+import java.lang.*;
 
 public class hw4 {
 
@@ -148,7 +149,7 @@ public class hw4 {
 			}
 		}
 
-		System.out.println ("\ttraining error = " + 
+		System.out.println ("\t\ttraining error = " + 
 			((float)errs / trainData.size()));
 
 		/* test error */
@@ -169,7 +170,7 @@ public class hw4 {
 			}
 		}
 
-		System.out.println ("\ttest error = " + 
+		System.out.println ("\t\ttest error = " + 
 			((float)errs / testData.size()) + "\n");
 
 		return w;
@@ -224,12 +225,217 @@ public class hw4 {
 		wc[784] = c;
 		ws.add (wc);
 
+		/* training error */
+
+		Iterator<int[]> trainIt = trainData.iterator();
+		int errs = 0;
+
+		while (trainIt.hasNext()) {
+			int[] curr = trainIt.next();
+
+			ftVec = Arrays.copyOfRange (curr, 0, curr.length - 1);
+
+			if (curr[curr.length - 1] == 0) label = -1;
+			else label = 1;
+
+			int sum = 0;
+
+			Iterator<int[]> wIt = ws.iterator();
+
+			while (wIt.hasNext()) {
+				int[] currW = wIt.next();
+
+				/* get w and its count */
+				c = currW[currW.length - 1];
+				currW = Arrays.copyOfRange (currW, 0, currW.length - 1);
+
+				/* c * sign of <w, x> */
+				sum += c * Math.signum (dot (currW, ftVec));
+			}
+
+			if (Math.signum (sum) != (float)label) {
+				errs++;
+			}
+		}
+
+		System.out.println ("\t\ttraining error = " + 
+			((float)errs / trainData.size()));
+
+		/* test error */
+
+		Iterator<int[]> testIt = testData.iterator();
+		errs = 0;
+
+		while (testIt.hasNext()) {
+			int[] curr = testIt.next();
+
+			ftVec = Arrays.copyOfRange (curr, 0, curr.length - 1);
+
+			if (curr[curr.length - 1] == 0) label = -1;
+			else label = 1;
+
+			int sum = 0;
+
+			Iterator<int[]> wIt = ws.iterator();
+
+			while (wIt.hasNext()) {
+				int[] currW = wIt.next();
+
+				/* get w and its count */
+				c = currW[currW.length - 1];
+				currW = Arrays.copyOfRange (currW, 0, currW.length - 1);
+
+				/* c * sign of <w, x> */
+				sum += c * Math.signum (dot (currW, ftVec));
+			}
+
+			if (Math.signum (sum) != (float)label) {
+				errs++;
+			}
+		}
+
+		System.out.println ("\t\ttest error = " + 
+			((float)errs / testData.size()) + "\n");
+
 		return ws;
 	}
 
-	public static void avgPerceptron (LinkedList<int[]> trainData, 
-	LinkedList<int[]> testData, int passes) {
+	/* averaged perceptron */
+	public static LinkedList<int[]> avgPerceptron (LinkedList<int[]> 
+	trainData, LinkedList<int[]> testData, int passes) {
+		LinkedList<int[]> ws = new LinkedList<int[]>();
 
+		int[] w = new int[784];
+		for (int i = 0; i < w.length; i++) {
+			w[i] = 0;
+		}
+
+		int[] ftVec;
+		int label;
+
+		int c = 1;
+
+		for (int i = 0; i < passes; i++) {
+			Iterator<int[]> trainIt = trainData.iterator();
+			while (trainIt.hasNext()) {
+				int[] curr = trainIt.next();
+
+				ftVec = Arrays.copyOfRange (curr, 0, curr.length - 1);
+
+				if (curr[curr.length - 1] == 0) label = -1;
+				else label = 1;
+
+				/* if y <w, x> <= 0, a mistake was made */
+				if (label * dot (w, ftVec) <= 0) {
+					/* store this w into a new array with the last index
+					 * holding the count - how long this w survived as a
+					 * classifier */
+					int[] wc = Arrays.copyOf (w, 785);
+					wc[784] = c;
+					ws.add (wc);
+
+					/* adjust w and reset c to 1 */
+					w = adjust (w, label, ftVec);
+					c = 1;
+				} else {
+					/* if no mistake, increment count */
+					c++;
+				}
+			}
+		}
+
+		/* add the last w */
+		int[] wc = Arrays.copyOf (w, 785);
+		wc[784] = c;
+		ws.add (wc);
+
+		/* training error */
+
+		Iterator<int[]> trainIt = trainData.iterator();
+		int errs = 0;
+
+		while (trainIt.hasNext()) {
+			int[] curr = trainIt.next();
+
+			ftVec = Arrays.copyOfRange (curr, 0, curr.length - 1);
+
+			if (curr[curr.length - 1] == 0) label = -1;
+			else label = 1;
+
+			int[] sum = new int[784];
+			for (int i = 0; i < sum.length; i++) {
+				sum[i] = 0;
+			}
+
+			Iterator<int[]> wIt = ws.iterator();
+
+			while (wIt.hasNext()) {
+				int[] currW = wIt.next();
+
+				/* get w and its count */
+				c = currW[currW.length - 1];
+				currW = Arrays.copyOfRange (currW, 0, currW.length - 1);
+
+				/* sum of all c * w */
+				for (int i = 0; i < sum.length; i++) {
+					sum[i] = sum[i] + (c * currW[i]);
+				}
+			}
+
+			int res = dot (sum, ftVec);
+
+			if (Math.signum (res) != (float)label) {
+				errs++;
+			}
+		}
+
+		System.out.println ("\t\ttraining error = " + 
+			((float)errs / trainData.size()));
+
+		/* test error */
+
+		Iterator<int[]> testIt = testData.iterator();
+		errs = 0;
+
+		while (testIt.hasNext()) {
+			int[] curr = testIt.next();
+
+			ftVec = Arrays.copyOfRange (curr, 0, curr.length - 1);
+
+			if (curr[curr.length - 1] == 0) label = -1;
+			else label = 1;
+
+			int[] sum = new int[784];
+			for (int i = 0; i < sum.length; i++) {
+				sum[i] = 0;
+			}
+
+			Iterator<int[]> wIt = ws.iterator();
+
+			while (wIt.hasNext()) {
+				int[] currW = wIt.next();
+
+				/* get w and its count */
+				c = currW[currW.length - 1];
+				currW = Arrays.copyOfRange (currW, 0, currW.length - 1);
+
+				/* sum of all c * w */
+				for (int i = 0; i < sum.length; i++) {
+					sum[i] = sum[i] + (c * currW[i]);
+				}
+			}
+
+			int res = dot (sum, ftVec);
+
+			if (Math.signum (res) != (float)label) {
+				errs++;
+			}
+		}
+
+		System.out.println ("\t\ttest error = " + 
+			((float)errs / testData.size()) + "\n");
+
+		return ws;
 	}
 
 	/* main function */
@@ -250,7 +456,7 @@ public class hw4 {
 		System.out.println ("running perceptron...\n");
 
 		for (int i = 1; i < passes + 1; i++) {
-			System.out.println ("# passes: " + i + "...\n");
+			System.out.println ("\t# passes: " + i + "...\n");
 
 			int[] res = perceptron (aTrainData, aTestData, i);
 
@@ -260,7 +466,7 @@ public class hw4 {
 		System.out.println ("running voted perceptron...\n");
 
 		for (int i = 1; i < passes + 1; i++) {
-			System.out.println ("# passes: " + i + "...\n");
+			System.out.println ("\t# passes: " + i + "...\n");
 
 			LinkedList<int[]> res = votedPerceptron (aTrainData, aTestData, i);
 
@@ -270,8 +476,9 @@ public class hw4 {
 		System.out.println ("running averaged perceptron...\n");
 
 		for (int i = 1; i < passes + 1; i++) {
-			System.out.println ("# passes: " + i + "...\n");
-			avgPerceptron (aTrainData, aTestData, i);
+			System.out.println ("\t# passes: " + i + "...\n");
+			
+			LinkedList<int[]> res = avgPerceptron (aTrainData, aTestData, i);
 		}
 
 		/* ------------------------------ Q2 ------------------------------ */
