@@ -109,7 +109,7 @@ public class hw4 {
 
 	/* perceptron */
 	public static int[] perceptron (LinkedList<int[]> trainData, 
-	LinkedList<int[]> testData, int passes) {
+	LinkedList<int[]> testData, int passes, int l) {
 		/* w - normal vector to the hyperplane */
 		int[] w = new int[784];
 
@@ -131,7 +131,7 @@ public class hw4 {
 				ftVec = Arrays.copyOfRange (curr, 0, curr.length - 1);
 
 				/* check the label */
-				if (curr[curr.length - 1] == 0) label = -1;
+				if (curr[curr.length - 1] == l) label = -1;
 				else label = 1;
 
 				/* if y <w, x> <= 0, a mistake was made */
@@ -140,48 +140,6 @@ public class hw4 {
 				}
 			}
 		}
-
-		/* training error */
-		
-		Iterator<int[]> trainIt = trainData.iterator();
-		int errs = 0;
-
-		while (trainIt.hasNext()) {
-			int[] curr = trainIt.next();
-
-			ftVec = Arrays.copyOfRange (curr, 0, curr.length - 1);
-
-			if (curr[curr.length - 1] == 0) label = -1;
-			else label = 1;
-
-			if (label * dot (w, ftVec) <= 0) {
-				errs++;
-			}
-		}
-
-		System.out.println ("\t\ttraining error = " + 
-			((float)errs / trainData.size()));
-
-		/* test error */
-
-		Iterator<int[]> testIt = testData.iterator();
-		errs = 0;
-
-		while (testIt.hasNext()) {
-			int[] curr = testIt.next();
-
-			ftVec = Arrays.copyOfRange (curr, 0, curr.length - 1);
-
-			if (curr[curr.length - 1] == 0) label = -1;
-			else label = 1;
-
-			if (label * dot (w, ftVec) <= 0) {
-				errs++;
-			}
-		}
-
-		System.out.println ("\t\ttest error = " + 
-			((float)errs / testData.size()) + "\n");
 
 		return w;
 	}
@@ -236,6 +194,30 @@ public class hw4 {
 		ws.add (wc);
 
 		return ws;
+	}
+
+	public static float errs (LinkedList<int[]> data, int[] w, int l) {
+		/* training error */
+		
+		Iterator<int[]> it = data.iterator();
+		int[] ftVec;
+		int label;
+		int errs = 0;
+
+		while (it.hasNext()) {
+			int[] curr = it.next();
+
+			ftVec = Arrays.copyOfRange (curr, 0, curr.length - 1);
+
+			if (curr[curr.length - 1] == l) label = -1;
+			else label = 1;
+
+			if (label * dot (w, ftVec) <= 0) {
+				errs++;
+			}
+		}
+
+		return (float)errs / data.size();
 	}
 
 	/* function for calculating % error - voted perceptron */
@@ -320,6 +302,28 @@ public class hw4 {
 		return (float)errs / data.size();
 	}
 
+	/* function to return label from one vs all classifier */
+	int oneVsAll (LinkedList<int[]> data, int[][] ws) {
+		int matches = 0;
+		int finalLabel = 10;
+		Iterator<int[]> it = data.iterator();
+
+		while (it.hasNext()) {
+			int[] curr = it.next();
+
+			for (int i = 0; i < ws.length; i++) {
+				if (dot (ws[i], curr) > 0) {
+					matches++;
+					finalLabel = i;
+				}
+			}
+		}
+
+		/* if more than 1 match or no matches, 'don't know' */
+		if (matches != 1) return 10;
+		else return finalLabel;
+	}
+
 	/* main function */
 	public static void main (String[] args) {
 		int passes = 3;
@@ -340,9 +344,15 @@ public class hw4 {
 		for (int i = 1; i < passes + 1; i++) {
 			System.out.println ("\t# passes: " + i + "...\n");
 
-			int[] res = perceptron (aTrainData, aTestData, i);
+			int[] res = perceptron (aTrainData, aTestData, i, 0);
 
 			//printVec (res);
+
+			System.out.println ("\t\ttraining error = " + 
+				errs (aTrainData, res, 0));
+
+			System.out.println ("\t\ttest error = " + 
+				errs (aTestData, res, 0) + "\n");
 		}
 
 		System.out.println ("running voted perceptron...\n");
@@ -390,5 +400,28 @@ public class hw4 {
 		bTrainData = read (bTrainFile);
 		bTestData = read (bTestFile);
 
+		int[][] classifiers = new int[10][];
+
+		for (int i = 0; i < classifiers.length; i++) {
+			classifiers[i] = perceptron (bTrainData, bTestData, 1, i);
+		}
+
+		System.out.println("calculating confusion matrix...\n");
+
+		/* print the confusion matrix */
+		DecimalFormat df = new DecimalFormat("0.00");
+		double val;
+
+		System.out.println("    0000 0001 0002 0003 0004 0005 0006 0007 0008 0009 ????");
+		System.out.println("   -------------------------------------------------------");
+		
+		for (int i = 0; i < 10; i++) {
+			System.out.print(i + " | ");
+			for (int j = 0; j < 11; j++) {
+				val = 0;
+				System.out.print(df.format(val) + " ");
+			}
+			System.out.print("\n");
+		}
 	}
 }
