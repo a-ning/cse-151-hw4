@@ -88,6 +88,16 @@ public class hw4 {
 		return res;
 	}
 
+	public static long dot (long[] a, int[] b) {
+		long res = 0;
+
+		for (int i = 0; i < a.length; i++) {
+			res += a[i] * b[i];
+		}
+
+		return res;
+	}
+
 	/* function to correct w if a mistake was made */
 	public static int[] adjust (int[] w, int y, int[] x) {
 		for (int i = 0; i < x.length; i++) {
@@ -283,7 +293,7 @@ public class hw4 {
 			if (curr[curr.length - 1] == 0) label = -1;
 			else label = 1;
 
-			int[] sum = new int[ftVec.length];
+			long[] sum = new long[ftVec.length];
 			for (int i = 0; i < sum.length; i++) {
 				sum[i] = 0;
 			}
