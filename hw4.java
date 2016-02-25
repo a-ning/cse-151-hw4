@@ -131,8 +131,8 @@ public class hw4 {
 				ftVec = Arrays.copyOfRange (curr, 0, curr.length - 1);
 
 				/* check the label */
-				if (curr[curr.length - 1] == l) label = -1;
-				else label = 1;
+				if (curr[curr.length - 1] == l) label = 1;
+				else label = -1;
 
 				/* if y <w, x> <= 0, a mistake was made */
 				if (label * dot (w, ftVec) <= 0) {
@@ -303,19 +303,15 @@ public class hw4 {
 	}
 
 	/* function to return label from one vs all classifier */
-	int oneVsAll (LinkedList<int[]> data, int[][] ws) {
+	public static int oneVsAll (int[] data, int[][] classifiers) {
 		int matches = 0;
+		int label = 1;
 		int finalLabel = 10;
-		Iterator<int[]> it = data.iterator();
 
-		while (it.hasNext()) {
-			int[] curr = it.next();
-
-			for (int i = 0; i < ws.length; i++) {
-				if (dot (ws[i], curr) > 0) {
-					matches++;
-					finalLabel = i;
-				}
+		for (int i = 0; i < classifiers.length; i++) {
+			if (dot (data, classifiers[i]) > 0) {
+				matches++;
+				finalLabel = i;
 			}
 		}
 
@@ -344,7 +340,7 @@ public class hw4 {
 		for (int i = 1; i < passes + 1; i++) {
 			System.out.println ("\t# passes: " + i + "...\n");
 
-			int[] res = perceptron (aTrainData, aTestData, i, 0);
+			int[] res = perceptron (aTrainData, aTestData, i, 6);
 
 			//printVec (res);
 
@@ -400,25 +396,51 @@ public class hw4 {
 		bTrainData = read (bTrainFile);
 		bTestData = read (bTestFile);
 
-		int[][] classifiers = new int[10][];
+		System.out.println("calculating confusion matrix...\n");
 
-		for (int i = 0; i < classifiers.length; i++) {
+		int[][] classifiers = new int[10][];
+		int[][] c = new int[11][10];
+		int[] labelsAll = new int[10];
+		int res;
+
+		for (int i = 0; i < 11; i++) {
+			for (int j = 0; j < 10; j++) {
+				c[i][j] = 0;
+				labelsAll[j] = 0;
+			}
+		}
+
+		for (int i = 0; i < 10; i++) {
 			classifiers[i] = perceptron (bTrainData, bTestData, 1, i);
 		}
 
-		System.out.println("calculating confusion matrix...\n");
+		Iterator<int[]> testIt = bTestData.iterator();
+
+		while (testIt.hasNext()) {
+			int[] curr = testIt.next();
+
+			int[] ftVec = Arrays.copyOfRange (curr, 0, curr.length - 1);
+
+			res = oneVsAll (ftVec, classifiers);
+
+			labelsAll[curr[curr.length - 1]] = 
+				labelsAll[curr[curr.length - 1]] + 1;
+			c[res][curr[curr.length - 1]]++;
+		}
 
 		/* print the confusion matrix */
 		DecimalFormat df = new DecimalFormat("0.00");
 		double val;
 
-		System.out.println("    0000 0001 0002 0003 0004 0005 0006 0007 0008 0009 ????");
-		System.out.println("   -------------------------------------------------------");
+		System.out.println("    0000 0001 0002 0003 0004 0005 0006 0007 0008 0009");
+		System.out.println("   --------------------------------------------------");
 		
-		for (int i = 0; i < 10; i++) {
-			System.out.print(i + " | ");
-			for (int j = 0; j < 11; j++) {
-				val = 0;
+		for (int i = 0; i < 11; i++) {
+			if (i == 10) System.out.print("? | ");
+			else System.out.print(i + " | ");
+
+			for (int j = 0; j < 10; j++) {
+				val = (double)c[i][j] / labelsAll[j];
 				System.out.print(df.format(val) + " ");
 			}
 			System.out.print("\n");
